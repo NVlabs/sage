@@ -1,0 +1,32 @@
+# Isaac Sim MCP Rules
+
+# General Rules
+- Before executing any code, always check if the scene is properly initialized by calling get_scene_info()
+- When working with robots, try using create_robot() first before using execute_script()
+- If execute_script() fails due to communication error, retry up to 3 times at most
+- For any creation of robot, call create_physics_scene() first
+- Always print the formatted code into chat to confirm before execution
+
+# Physics Rules
+- If the scene is empty, create a physics scene with create_physics_scene()
+- For physics simulation, avoid using simulation_context to run simulations in the main thread
+- Use the World class with async methods for initializing physics and running simulations
+- When needed, use my_world.play() followed by multiple step_async() calls to wait for physics to stabilize
+
+# Robot Creation Rules
+- Before creating a robot, verify availability of connection with get_scene_info()
+- Available robot types: "franka", "jetbot", "carter", "g1", "go1"
+- Position robots using their appropriate parameters
+- For custom robot configurations, use execute_script() only when create_robot() is insufficient
+
+# Physics Scene Rules
+- Objects should include 'type' and 'position' at minimum
+- Object format example: {"path": "/World/Cube", "type": "Cube", "size": 20, "position": [0, 100, 0]}
+- Default gravity is [0, 0, -981.0] (cm/s^2)
+- Set floor=True to create a default ground plane
+
+# Script Execution Rules
+- Use World class instead of SimulationContext when possible
+- Initialize physics before trying to control any articulations
+- When controlling robots, make sure to step the physics at least once before interaction
+- For robot joint control, first initialize the articulation, then get the controller 

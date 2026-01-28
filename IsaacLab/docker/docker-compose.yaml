@@ -1,0 +1,138 @@
+# Here we set the parts that would
+# be re-used between services to an
+# extension field
+# https://docs.docker.com/compose/compose-file/compose-file-v3/#extension-fields
+x-default-isaac-lab-volumes: &default-isaac-lab-volumes
+  # These volumes follow from this page
+  # https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/install_faq.html#save-isaac-sim-configs-on-local-disk
+  - type: volume
+    source: isaac-cache-kit
+    target: ${DOCKER_ISAACSIM_ROOT_PATH}/kit/cache
+  - type: volume
+    source: isaac-cache-ov
+    target: ${DOCKER_USER_HOME}/.cache/ov
+  - type: volume
+    source: isaac-cache-pip
+    target: ${DOCKER_USER_HOME}/.cache/pip
+  - type: volume
+    source: isaac-cache-gl
+    target: ${DOCKER_USER_HOME}/.cache/nvidia/GLCache
+  - type: volume
+    source: isaac-cache-compute
+    target: ${DOCKER_USER_HOME}/.nv/ComputeCache
+  - type: volume
+    source: isaac-logs
+    target: ${DOCKER_USER_HOME}/.nvidia-omniverse/logs
+  - type: volume
+    source: isaac-carb-logs
+    target: ${DOCKER_ISAACSIM_ROOT_PATH}/kit/logs/Kit/Isaac-Sim
+  - type: volume
+    source: isaac-data
+    target: ${DOCKER_USER_HOME}/.local/share/ov/data
+  - type: volume
+    source: isaac-docs
+    target: ${DOCKER_USER_HOME}/Documents
+    # This overlay allows changes on the local files to
+    # be reflected within the container immediately
+  - type: bind
+    source: ../source
+    target: ${DOCKER_ISAACLAB_PATH}/source
+  - type: bind
+    source: ../docs
+    target: ${DOCKER_ISAACLAB_PATH}/docs
+  - type: bind
+    source: ../tools
+    target: ${DOCKER_ISAACLAB_PATH}/tools
+    # The effect of these volumes is twofold:
+    # 1. Prevent root-owned files from flooding the _build and logs dir
+    #    on the host machine
+    # 2. Preserve the artifacts in persistent volumes for later copying
+    #    to the host machine
+  - type: volume
+    source: isaac-lab-docs
+    target: ${DOCKER_ISAACLAB_PATH}/docs/_build
+  - type: volume
+    source: isaac-lab-logs
+    target: ${DOCKER_ISAACLAB_PATH}/logs
+  - type: volume
+    source: isaac-lab-data
+    target: ${DOCKER_ISAACLAB_PATH}/data_storage
+
+x-default-isaac-lab-environment: &default-isaac-lab-environment
+  - ISAACSIM_PATH=${DOCKER_ISAACLAB_PATH}/_isaac_sim
+  - OMNI_KIT_ALLOW_ROOT=1
+
+x-default-isaac-lab-deploy: &default-isaac-lab-deploy
+  resources:
+    reservations:
+      devices:
+        - driver: nvidia
+          count: all
+          capabilities: [ gpu ]
+
+services:
+  # This service is the base Isaac Lab image
+  isaac-lab-base:
+    profiles: [ "base" ]
+    env_file: .env.base
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.base
+      args:
+        - ISAACSIM_BASE_IMAGE_ARG=${ISAACSIM_BASE_IMAGE}
+        - ISAACSIM_VERSION_ARG=${ISAACSIM_VERSION}
+        - ISAACSIM_ROOT_PATH_ARG=${DOCKER_ISAACSIM_ROOT_PATH}
+        - ISAACLAB_PATH_ARG=${DOCKER_ISAACLAB_PATH}
+        - DOCKER_USER_HOME_ARG=${DOCKER_USER_HOME}
+    image: isaac-lab-base
+    container_name: isaac-lab-base
+    environment: *default-isaac-lab-environment
+    volumes: *default-isaac-lab-volumes
+    network_mode: host
+    deploy: *default-isaac-lab-deploy
+    # This is the entrypoint for the container
+    entrypoint: bash
+    stdin_open: true
+    tty: true
+
+  # This service adds a ROS2 Humble
+  # installation on top of the base image
+  isaac-lab-ros2:
+    profiles: [ "ros2" ]
+    env_file:
+      - .env.base
+      - .env.ros2
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.ros2
+      args:
+        # ROS2_APT_PACKAGE will default to NONE. This is to
+        # avoid a warning message when building only the base profile
+        # with the .env.base file
+        - ROS2_APT_PACKAGE=${ROS2_APT_PACKAGE:-NONE}
+    image: isaac-lab-ros2
+    container_name: isaac-lab-ros2
+    environment: *default-isaac-lab-environment
+    volumes: *default-isaac-lab-volumes
+    network_mode: host
+    deploy: *default-isaac-lab-deploy
+    # This is the entrypoint for the container
+    entrypoint: bash
+    stdin_open: true
+    tty: true
+
+volumes:
+  # isaac-sim
+  isaac-cache-kit:
+  isaac-cache-ov:
+  isaac-cache-pip:
+  isaac-cache-gl:
+  isaac-cache-compute:
+  isaac-logs:
+  isaac-carb-logs:
+  isaac-data:
+  isaac-docs:
+  # isaac-lab
+  isaac-lab-docs:
+  isaac-lab-logs:
+  isaac-lab-data:

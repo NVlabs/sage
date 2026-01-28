@@ -1,0 +1,11 @@
+h5py
+hydra-core
+matplotlib
+meshcat
+numpy
+scikit-learn
+scipy
+tensorboard
+torch
+torchvision
+trimesh

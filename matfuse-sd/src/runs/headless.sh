@@ -1,0 +1,1 @@
+python scripts/matfuse_sd/src/app.py --ckpt ckpts/matfuse-full.ckpt --config scripts/matfuse_sd/src/configs/diffusion/matfuse-ldm-vq_f8.yaml

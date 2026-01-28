@@ -1,0 +1,7 @@
+__pycache__
+*.egg-info
+.vscode
+build
+outputs
+m2t2.pth
+pointnet2_ops/pointnet2_ops/_ext.cpython-310-x86_64-linux-gnu.so

@@ -1,0 +1,27 @@
+[package]
+name = "isaac_sim_mcp_extension"
+version = "0.3.0"
+title = "Isaac Sim MCP Server"
+description = "MCP server extension for Isaac Sim to enable communication with Claude and other AI assistants"
+category = "Robotics"
+keywords = ["mcp", "server", "socket", "simulation", "robotics"]
+
+[dependencies]
+"omni.isaac.core" = {}
+"omni.kit.uiapp" = {}
+"omni.isaac.ui" = {}
+
+
+
+# Main python module this extension provides, it will be publicly available as "import isaac_sim_mcp_extension".
+[[python.module]]
+name = "isaac_sim_mcp_extension"
+
+
+
+[python.pipapi]
+
+
+[settings]
+server.socket = 8766
+server.host = "localhost"
