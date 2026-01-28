@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <!-- <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> -->
+
+  <!-- <meta http-equiv="x-ua-compatible" content="ie=edge"> -->
+
+  <title>SAGE</title>
+
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- mirror: F0%9F%AA%9E&lt -->
+
+  <link rel="stylesheet" type="text/css" href="./src/slick.css">
+  <link rel="stylesheet" type="text/css" href="./src/slick-theme.css">
+  <link rel="stylesheet" href="./src/bulma.min.css">
+  <link rel="stylesheet" href="./src/bulma-slider.min.css">
+  <link rel="stylesheet" href="./src/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./src/bootstrap.min.css">
+  <link rel="stylesheet" href="./src/font-awesome.min.css">
+  <link rel="stylesheet" href="./src/codemirror.min.css">
+  <link rel="stylesheet" href="./src/app.css">
+  <link rel="stylesheet" href="./src/index.css">
+  <link rel="stylesheet" href="./src/select.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="resources/glide.core.min.css">
+  <link rel="stylesheet" href="resources/glide.theme.min.css">
+  <link rel="stylesheet" href="resources/glide-custom.css">
+  <script src="resources/handlers.js"></script>
+  <script src="./src/jquery.min.js"></script>
+  <script src="./src/bootstrap.min.js"></script>
+  <script src="./src/codemirror.min.js"></script>
+  <script src="./src/clipboard.min.js"></script>
+  <script src="./src/video_comparison.js"></script>
+  <script src="./src/select.js"></script>
+  <script src="./src/bulma-slider.min.js"></script>
+  <script src="./src/bulma-carousel.min.js"></script>
+  <!-- <script src="./src/app.js"></script> -->
+  <script src="./src/index.js"></script>
+  <!-- <script src="./src/slick.js"></script> -->
+  
+  <script src="resources/glide.min.js"></script>
+  <script>
+  window.onload = function() {
+    // Initialize carousels with error handling
+    try {
+      const dynamicCarousel = document.getElementById("dynamic-carousel");
+      if (dynamicCarousel) {
+        new Glide("#dynamic-carousel", {
+          type: "carousel",
+          perView: 1.68,
+          focusAt: "center",
+          autoplay: 13000,
+          hoverpause: true
+        }).mount();
+      }
+    } catch (e) {
+      // Dynamic carousel initialization failed
+    }
+    
+    try {
+      const realtimeCarousel = document.getElementById("realtime-carousel");
+      if (realtimeCarousel) {
+        new Glide("#realtime-carousel", {
+          type: "carousel",
+          perView: 2.05,
+          focusAt: "center",
+          autoplay: 3000,
+          hoverpause: true
+        }).mount();
+      }
+    } catch (e) {
+      // Realtime carousel initialization failed
+    }
+    
+    // Wait a bit more for DOM to be fully ready, then initialize video sync
+    // setTimeout(() => {
+    //   initializeSynchronizedVideos();
+    // }, 2000);
+  };
+
+  function initializeSynchronizedVideos() {
+    // Find all video sections using specific IDs
+    const videoSectionIds = ['video-section-1', 'video-section-2', 'video-section-3', 'video-section-4'];
+    let sectionsFound = 0;
+    
+    videoSectionIds.forEach((sectionId, sectionIndex) => {
+      const section = document.getElementById(sectionId);
+      
+      if (section) {
+        const videos = section.querySelectorAll('video');
+        
+        if (videos.length > 0) {
+          setupSynchronizedPlayback(videos, sectionIndex, sectionId);
+          sectionsFound++;
+        }
+      }
+    });
+    
+    // Fallback: If sections not found by ID, try direct video selection
+    if (sectionsFound === 0) {
+      // Find all videos that have autoplay and are not in carousels
+      const allVideos = document.querySelectorAll('video[autoplay]:not(.game)');
+      
+      if (allVideos.length > 0) {
+        // Group videos by their parent containers
+        const videoGroups = new Map();
+        
+        allVideos.forEach((video, index) => {
+          // Find the closest container div
+          const container = video.closest('.col-md-12');
+          const containerId = container ? container.innerHTML.substring(0, 50) : `group-${Math.floor(index / 6)}`;
+          
+          if (!videoGroups.has(containerId)) {
+            videoGroups.set(containerId, []);
+          }
+          videoGroups.get(containerId).push(video);
+        });
+        
+        // Set up playback for each group
+        let groupIndex = 0;
+        videoGroups.forEach((videos, groupId) => {
+          setupSynchronizedPlayback(videos, groupIndex, `direct-group-${groupIndex}`);
+          groupIndex++;
+        });
+      }
+    }
+    
+    // Final fallback - find ANY videos with autoplay attribute
+    setTimeout(() => {
+      const fallbackVideos = document.querySelectorAll('video[autoplay]');
+      
+      if (fallbackVideos.length > 0 && sectionsFound === 0) {
+        setupSynchronizedPlayback(Array.from(fallbackVideos), 0, 'fallback-all-videos');
+      }
+    }, 1000);
+  }
+
+  function setupSynchronizedPlayback(videos, sectionIndex, sectionId) {
+    // Remove autoplay attribute and set up manual control
+    videos.forEach(video => {
+      video.removeAttribute('autoplay');
+      video.currentTime = 0;
+      video.muted = true; // Ensure videos are muted for autoplay
+      video.loop = true; // Enable loop for continuous playback
+    });
+
+    // Function to play all videos simultaneously
+    function playAllVideos() {
+      videos.forEach(video => {
+        video.currentTime = 0;
+        video.play().catch(e => {
+          // Video play failed silently
+        });
+      });
+    }
+
+    // Ensure videos are ready to play
+    videos.forEach(video => {
+      video.addEventListener('loadeddata', function() {
+        if (this.readyState >= 2) {
+          this.currentTime = 0;
+        }
+      });
+    });
+
+    // Start playing all videos initially with a delay to ensure they're loaded
+    setTimeout(() => {
+      playAllVideos();
+    }, 2000);
+
+    // Set up timer to replay all videos every 5 seconds
+    setInterval(() => {
+      playAllVideos();
+    }, 5000);
+
+    // Handle visibility change to restart videos when page becomes visible
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        setTimeout(() => {
+          playAllVideos();
+        }, 500);
+      }
+    });
+  }
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RZ6PES7EKD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-RZ6PES7EKD');
+  </script>
+</head>
+
+<body>
+  <div class="container" id="header" style="text-align: center; margin: auto;">
+    <div class="row" id="title-row" style="max-width: 100%; margin: 0 auto; display: inline-block">
+      <h1 class="col-md-12 text-center" id="title">
+        <b>SAGE</b>: Scalable Agentic 3D Scene Generation for Embodied AI
+      </h1>
+    </div>
+  </div>
+  <script>
+  </script>
+  <div class="container" id="main">
+    <div class="row">
+      <div class="col-sm-12 text-center">
+        <ul class="list-inline">
+          <li> <a href="https://xiahongchi.github.io/">Hongchi Xia<sup>1,2*</sup></a> </li>
+          <li> <a href="https://xuan-li.github.io/">Xuan Li<sup>1</sup></a> </li>
+          <li> <a href="https://mli0603.github.io/">Zhaoshuo Li<sup>1</sup></a> </li>
+          <li> <a href="https://qianlim.github.io/">Qianli Ma<sup>1</sup></a> </li>
+          <li> <a href="https://cnut1648.github.io/">Jiashu Xu<sup>1</sup></a> </li>
+          <li> <a href="https://mingyuliu.net/">Ming-Yu Liu<sup>1</sup></a> </li>
+          <li> <a href="https://ycui.me/">Yin Cui<sup>1</sup></a> </li>
+          <li> <a href="https://tsungyilin.info/">Tsung-Yi Lin<sup>1</sup></a> </li>
+          <br>
+          <li> <a href="https://www.cs.cornell.edu/~weichiu/">Wei-Chiu Ma<sup>3</sup></a> </li>
+          <li> <a href="https://shenlong.web.illinois.edu/">Shenlong Wang<sup>2</sup></a> </li>
+          <li> <a href="https://shurans.github.io/">Shuran Song<sup>1,4</sup></a> </li>
+          <li> <a href="https://weify627.github.io/">Fangyin Wei<sup>1</sup></a> </li>
+        </ul>
+        <ul class="list-inline">
+          <li> <sup>1</sup>NVIDIA </li>
+          <li> <sup>2</sup>University of Illinois at Urbana-Champaign </li>
+          <li> <sup>3</sup>Cornell University </li>
+          <li> <sup>4</sup>Stanford University </li>
+        </ul>
+        <ul class="list-inline">
+          <li> <sup>*</sup>Work done during internship at NVIDIA </li>
+        </ul>
+        <div style="font-size: 1.2em; margin-top: 15px;">Arxiv Preprint</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-8 col-sm-offset-2 text-center">
+        
+        <span class="link-block">
+          <a href="" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon">
+              <svg class="svg-inline--fa fa-file-pdf fa-w-12" aria-hidden="true" focusable="false" data-prefix="fas"
+                data-icon="file-pdf" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"
+                data-fa-i2svg="">
+                <path fill="currentColor"
+                  d="M181.9 256.1c-5-16-4.9-46.9-2-46.9 8.4 0 7.6 36.9 2 46.9zm-1.7 47.2c-7.7 20.2-17.3 43.3-28.4 62.7 18.3-7 39-17.2 62.9-21.9-12.7-9.6-24.9-23.4-34.5-40.8zM86.1 428.1c0 .8 13.2-5.4 34.9-40.2-6.7 6.3-29.1 24.5-34.9 40.2zM248 160h136v328c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V24C0 10.7 10.7 0 24 0h200v136c0 13.2 10.8 24 24 24zm-8 171.8c-20-12.2-33.3-29-42.7-53.8 4.5-18.5 11.6-46.6 6.2-64.2-4.7-29.4-42.4-26.5-47.8-6.8-5 18.3-.4 44.1 8.1 77-11.6 27.6-28.7 64.6-40.8 85.8-.1 0-.1.1-.2.1-27.1 13.9-73.6 44.5-54.5 68 5.6 6.9 16 10 21.5 10 17.9 0 35.7-18 61.1-61.8 25.8-8.5 54.1-19.1 79-23.2 21.7 11.8 47.1 19.5 64 19.5 29.2 0 31.2-32 19.7-43.4-13.9-13.6-54.3-9.7-73.6-7.2zM377 105L279 7c-4.5-4.5-10.6-7-17-7h-6v128h128v-6.1c0-6.3-2.5-12.4-7-16.9zm-74.1 255.3c4.1-2.7-2.5-11.9-42.8-9 37.1 15.8 42.8 9 42.8 9z">
+                </path>
+              </svg><!-- <i class="fas fa-file-pdf"></i> Font Awesome fontawesome.com -->
+            </span>
+            <span>Paper</span>
+          </a>
+        </span>
+        
+        <span class="link-block">
+          <a href="https://github.com/NVlabs/sage" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon">
+              <svg class="svg-inline--fa fa-github fa-w-16" aria-hidden="true" focusable="false" data-prefix="fab"
+                data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" data-fa-i2svg="">
+                <path fill="currentColor"
+                  d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z">
+                </path>
+              </svg><!-- <i class="fab fa-github"></i> Font Awesome fontawesome.com -->
+            </span>
+            <span>Code</span>
+          </a>
+        </span>
+
+        <span class="link-block">
+          <a href="https://huggingface.co/datasets/nvidia/SAGE-10k" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon">
+              <svg class="svg-inline--fa fa-github fa-w-16" aria-hidden="true" focusable="false" data-prefix="fab"
+                data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" data-fa-i2svg="">
+                <path fill="currentColor"
+                  d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z">
+                </path>
+              </svg><!-- <i class="fab fa-github"></i> Font Awesome fontawesome.com -->
+            </span>
+            <span>Dataset</span>
+          </a>
+        </span>
+
+      </div>
+    </div>
+
+
+    <!-- Browser Recommendation Notice
+    <div class="row">
+      <div class="col-md-12">
+        <div style="background-color: #d1ecf1; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px 20px; margin-top: 20px; margin-bottom: 20px; text-align: center;">
+          <strong style="color: #0c5460;">💡 Best Viewing Experience:</strong> 
+          <span style="color: #0c5460;">This website is optimized for viewing in <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>.</span>
+        </div>
+      </div>
+    </div> -->
+
+    <div class="row">
+      <div class="col-sm-12 text-center">
+        <img src="./src/images/teaser.png" class="img-responsive" alt="overview" width="100%"
+            style="max-height: 900px;margin:auto;">
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3>
+            Abstract 
+        </h3>
+        <div class="text-justify">
+Real-world data collection for embodied agents remains costly and unsafe, calling for scalable, realistic, and simulator-ready 3D environments. However, existing scene-generation systems often rely on rule-based or task-specific pipelines, yielding artifacts and physically invalid scenes.
+<br>
+<br>
+We present SAGE, an agentic framework that, given a user-specified embodied task (e.g., “pick up a bowl and place it on the table”), understands the intent and automatically generates simulation-ready environments at scale. The agent couples multiple generators for layout and object composition with critics that evaluate semantic plausibility, visual realism, and physical stability. Through iterative reasoning and adaptive tool selection, it self-refines the scenes until meeting user intent and physical validity.
+<br>
+<br>
+The resulting environments are realistic, diverse, and directly deployable in modern simulators for policy training. Policies trained purely on this data exhibit clear scaling trends and generalize to unseen objects and layouts, demonstrating the promise of simulation-driven scaling for embodied AI. We will release both 3D scene and action generation code to foster further research.
+        </div>
+
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3>
+            SAGE-10k Dataset 
+        </h3>
+        <div class="text-justify">
+          <a href="https://huggingface.co/datasets/nvidia/SAGE-10k">SAGE-10k</a> is a large-scale interactive indoor scene dataset featuring realistic layouts, generated by the agentic-driven pipeline introduced in "SAGE: Scalable Agentic 3D Scene Generation for Embodied AI". The dataset contains 10,000 diverse scenes spanning 50 room types and styles, along with 565K uniquely generated 3D objects.
+          Download the dataset through this <a href="https://huggingface.co/datasets/nvidia/SAGE-10k">link</a>.
+        </div>
+
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12 text-center">
+        <img src="./src/images/preview_grid.jpg" class="img-responsive" alt="overview" width="75%"
+            style="max-height: 900px;margin:auto;">
+      </div>
+    </div>
+
+    
+
+    <!-- Jump Links Navigation -->
+    <div class="row">
+      <div class="col-md-12">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px; margin-bottom: 20px;">
+          <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Quick Navigation</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+            <a href="#single-room-scenes" style="text-decoration: none; color: #007bff; padding: 8px 15px; background-color: white; border-radius: 5px; border: 1px solid #dee2e6; transition: all 0.3s;">📍 Single-Room Scenes</a>
+            <a href="#multi-room-scenes" style="text-decoration: none; color: #007bff; padding: 8px 15px; background-color: white; border-radius: 5px; border: 1px solid #dee2e6; transition: all 0.3s;">🏠 Multi-Room Scenes</a>
+            <a href="#image-conditioned" style="text-decoration: none; color: #007bff; padding: 8px 15px; background-color: white; border-radius: 5px; border: 1px solid #dee2e6; transition: all 0.3s;">🖼️ Image-Conditioned Scenes</a>
+            <a href="#physical-stability" style="text-decoration: none; color: #007bff; padding: 8px 15px; background-color: white; border-radius: 5px; border: 1px solid #dee2e6; transition: all 0.3s;">⚖️ Physical Stability</a>
+            <a href="#augmentation" style="text-decoration: none; color: #007bff; padding: 8px 15px; background-color: white; border-radius: 5px; border: 1px solid #dee2e6; transition: all 0.3s;">🔄 Scene Augmentation</a>
+            <a href="#policy-training" style="text-decoration: none; color: #007bff; padding: 8px 15px; background-color: white; border-radius: 5px; border: 1px solid #dee2e6; transition: all 0.3s;">🤖 Policy Training</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Images and Video section -->
+    
+
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3 id="single-room-scenes">
+          Generated Single-Room Scenes
+        </h3>
+        <div class="text-justify">
+          Our Agentic Scene Generation Framework generates realistic, diverse, and semantically coherent scenes spanning various styles and functionalities, from Bedroom and Office spaces to creative themes like “Cyberpunk game den” and “Starry-night bedroom”.
+        </div>
+
+        <!-- Four videos in a row -->
+        
+        <div class="row text-center" style="margin-top: 20px;">
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/scenes/room_2adee539_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Bedroom</p>
+          </div>
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/scenes/room_1848f09b_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Living room</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_474654fd_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Gym</p>
+        </div>
+          
+        </div>
+
+        <div class="row text-center" style="margin-top: 20px;">
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/scenes/room_3c74d1da_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Fairy-tale princess room</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_614a7d28_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Rusty and dusty restroom</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_a51ea08a_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Office</p>
+          </div>
+        </div>
+
+        <div class="row text-center" style="margin-top: 20px;">
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/scenes/room_d978b2b1_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Cyberpunk game den</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_160b7be2_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Starry-night bedroom</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_e2160a58_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Golden and luxury bedroom</p>
+        </div>
+        </div>
+
+
+        <div class="row text-center" style="margin-top: 20px;">
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/scenes/room_12e0a75a_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Meeting room</p>
+          </div>
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/scenes/room_619d2257_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Children room</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_14c17c24_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Muddy and dirty dining room</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3 id="multi-room-scenes">
+          Generated Multi-Room Scenes
+        </h3>
+        <div class="text-justify">
+          SAGE can be extended to generate multi-room scenes at scale easily by generating the floor plan and then call generator MCP tools to multiple rooms in parallel.
+        </div>
+
+        <!-- Two videos in a row -->
+        
+        <div class="row text-center" style="margin-top: 20px;">
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/multiroom/layout_888b215e_circular_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">The student apartment with one bedroom</p>
+          </div>
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/multiroom/layout_df3e2b2d_circular_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">The student apartment with two bedrooms</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/multiroom/layout_52b1c66d_circular_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Multilingual teacher's apartment</p>
+        </div>
+        </div>
+
+        <div class="row text-center" style="margin-top: 20px;">
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/multiroom/layout_86954971_circular_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Mid-century modern family home</p>
+          </div>
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/multiroom/layout_c626133e_circular_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Craft supply hoarder's bungalow</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/multiroom/layout_5df180c2_circular_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Naturalist's cabin</p>
+        </div>
+        </div>
+
+
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3 id="image-conditioned">
+          Image-Conditioned Generated Scenes
+        </h3>
+        <div class="text-justify">
+          How about generating scenes that are conditioned on a reference image? 
+          Thanks to the capability of Agentic VLM model Qwen3-VL, we can directly feed a reference image to the agent.
+          Although agent is not able to generate pixel-aligned scenes with the reference image, it can generate scenes that are semantically coherent with the reference image.
+        </div>
+
+        <!-- Two videos in a row -->
+        
+        <div class="row text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-4">
+              <img src="src/videos/image_ref/images/green_2.png" alt="Reference image" style="width: 100%; height: auto;">
+              <p style="margin-top: 10px; font-style: italic;">Ref Image</p>
+          </div>
+          <div class="col-xs-4">
+            <img src="src/videos/image_ref/images/village.png" alt="Reference image" style="width: 100%; height: auto;">
+            <p style="margin-top: 10px; font-style: italic;">Ref Image</p>
+          </div>
+          <div class="col-xs-4">
+            <img src="src/videos/image_ref/images/umbridge.png" alt="Reference image" style="width: 100%; height: auto;">
+            <p style="margin-top: 10px; font-style: italic;">Ref Image</p>
+          </div>
+          
+        </div>
+
+        <div class="row text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/image_ref/videos/room_217b6452_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Generated Scene</p>
+          </div>
+          <div class="col-xs-4">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/image_ref/videos/room_a63c3cfb_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Generated Scene</p>
+          </div>
+          <div class="col-xs-4">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/image_ref/videos/room_dd7ff08e_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Generated Scene</p>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3 id="physical-stability">
+          Physical Stability of Generated Scenes
+        </h3>
+        <div class="text-justify">
+          Generated scenes are loaded into IsaacSim for physical validation. Both baselines exhibit displaced objects due to instability, whereas SAGE preserves scene stability before and after simulation.
+        </div>
+
+        <p style="margin-top: 15px; text-align: center; font-weight: bold;">
+          Progress bars below each video show simulation progress
+        </p>
+
+        <!-- Two videos in a row -->
+        
+        <div style="margin-top: 20px; display: flex; align-items: flex-start; justify-content: center; gap: 0;">
+          <div style="flex: 1; max-width: 33.333%; text-align: center;">
+              <video id="holodeck-video" autoplay muted loop style="width: 100%; height: auto; clip-path: inset(0 10% 0 10%); display: block;">
+                  <source src="src/videos/physics/holodeck_physics.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <div style="width: 80%; margin: 5px auto 0 auto; height: 4px; background-color: #ddd; border-radius: 2px; overflow: hidden;">
+                <div id="holodeck-progress" style="height: 100%; width: 0%; background-color: #007bff; transition: width 0.1s linear;"></div>
+              </div>
+              <p style="margin-top: 10px; font-style: italic;">Holodeck</p>
+          </div>
+          <div style="flex: 1; max-width: 33.333%; text-align: center; margin-left: -5%; margin-right: -5%;">
+            <video id="sceneweaver-video" autoplay muted loop style="width: 100%; height: auto; clip-path: inset(0 10% 0 10%); display: block;">
+                <source src="src/videos/physics/sceneweaver_physics.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div style="width: 80%; margin: 5px auto 0 auto; height: 4px; background-color: #ddd; border-radius: 2px; overflow: hidden;">
+              <div id="sceneweaver-progress" style="height: 100%; width: 0%; background-color: #007bff; transition: width 0.1s linear;"></div>
+            </div>
+            <p style="margin-top: 10px; font-style: italic;">SceneWeaver</p>
+          </div>
+          <div style="flex: 1; max-width: 33.333%; text-align: center;">
+            <video id="ours-video" autoplay muted loop style="width: 100%; height: auto; clip-path: inset(0 10% 0 10%); display: block;">
+                <source src="src/videos/physics/ours_physics.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div style="width: 80%; margin: 5px auto 0 auto; height: 4px; background-color: #ddd; border-radius: 2px; overflow: hidden;">
+              <div id="ours-progress" style="height: 100%; width: 0%; background-color: #007bff; transition: width 0.1s linear;"></div>
+            </div>
+            <p style="margin-top: 10px; font-style: italic;">Ours</p>
+          </div>
+        </div>
+        
+        <script>
+          // Update progress bars for physics comparison videos
+          function updateProgressBar(videoId, progressId) {
+            const video = document.getElementById(videoId);
+            const progress = document.getElementById(progressId);
+            
+            if (video && progress) {
+              video.addEventListener('timeupdate', function() {
+                const percentage = (video.currentTime / video.duration) * 100;
+                progress.style.width = percentage + '%';
+              });
+              
+              // Reset progress when video loops
+              video.addEventListener('ended', function() {
+                progress.style.width = '0%';
+              });
+            }
+          }
+          
+          // Initialize progress bars for all three videos
+          updateProgressBar('holodeck-video', 'holodeck-progress');
+          updateProgressBar('sceneweaver-video', 'sceneweaver-progress');
+          updateProgressBar('ours-video', 'ours-progress');
+        </script>
+        
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3 id="augmentation">
+          Augmentation of Generated Scenes
+        </h3>
+
+        <h4>
+          Object Category-Level Augmentation
+        </h4>
+        
+        <div class="text-justify">
+          Here we showcase the capability of our category augmentation method. We randomly select part of the objects in the scene for category augmentation.
+Given the text description of the selected object from the generation stage, we employ an LLM-based text augmentation to produce variations in
+geometry and texture (e.g., shape, color, material, or finish)
+while maintaining the original object category. We then use
+TRELLIS to synthesize corresponding 3D assets from
+these augmented descriptions, which are placed into the
+scene to enrich visual and physical diversity across instances.
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_2adee539_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Base Scene</p>
+          </div>
+          <div class="col-xs-6-crop">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/augmentation/object/bedroom/compose_0000_20251118_223249_067965.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Aug. Scene 1</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/object/bedroom/compose_0000_20251118_000620_744032.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 2</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/object/bedroom/compose_0002_20251118_223401_288418.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 3</p>
+          </div>
+        </div>
+
+        <!--  -->
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_1848f09b_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Base Scene</p>
+          </div>
+          <div class="col-xs-6-crop">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/augmentation/object/livingroom/compose_0000_20251118_190943_977297.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Aug. Scene 1</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/object/livingroom/compose_0008_20251118_191440_582346.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 2</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/object/livingroom/compose_0007_20251118_191405_027703.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 3</p>
+          </div>
+        </div>
+
+        <!--  -->
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_a51ea08a_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Base Scene</p>
+          </div>
+          <div class="col-xs-6-crop">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/augmentation/object/office/compose_0000_20251118_204944_047118.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Aug. Scene 1</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/object/office/compose_0003_20251118_205134_263656.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 2</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/object/office/compose_0005_20251118_205251_683496.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 3</p>
+          </div>
+        </div>
+
+        <!--  -->
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_12e0a75a_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Base Scene</p>
+          </div>
+          <div class="col-xs-6-crop">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/augmentation/object/meetingroom/compose_0000_20251118_204904_707429.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Aug. Scene 1</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/object/meetingroom/compose_0001_20251118_204944_298706.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 2</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/object/meetingroom/compose_0005_20251118_205216_137712.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 3</p>
+          </div>
+        </div>
+
+
+        <h4>
+          Scene Layout-Level Augmentation
+        </h4>
+        
+        <div class="text-justify">
+          While the category-level augmentations modify the geometry and texture of the selected objects, the background environment layout remains unchanged. 
+          For tasks requiring full-scene exploration or navigation, we introduce layout-level augmentation, where the background scene, including room geometry and all task irrelevant objects, is regenerated through the agent-driven scene generation. 
+          This process produces diverse scene layouts sharing the same task specification, enabling learning policies that generalize across spatial configurations.
+        </div>
+
+        <br>
+
+        <div class="text-justify">
+          Bedroom: We keep the objects of desk, nightstand, and mug on the nightstand as the same, and generate diverse layouts based on that.
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_2adee539_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Base Scene</p>
+          </div>
+          <div class="col-xs-6-crop">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/augmentation/scene/bedroom/room_11026dad_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Aug. Scene 1</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/scene/bedroom/room_7dd2d1ed_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 2</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/scene/bedroom/room_359695e9_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 3</p>
+          </div>
+        </div>
+
+
+        <div class="text-justify">
+          Livingroom: We keep the objects of sideboard, coffeetable, and vase on the coffeetable as the same, and generate diverse layouts based on that.
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_1848f09b_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Base Scene</p>
+          </div>
+          <div class="col-xs-6-crop">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/augmentation/scene/livingroom/room_956f80c3_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Aug. Scene 1</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/scene/livingroom/room_5639622d_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 2</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/scene/livingroom/room_e306ee5d_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 3</p>
+          </div>
+        </div>
+
+        <div class="text-justify">
+          Office: We keep the objects of sofa, a desk, and a pen on the desk as the same, and generate diverse layouts based on that.
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_a51ea08a_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Base Scene</p>
+          </div>
+          <div class="col-xs-6-crop">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/augmentation/scene/office/room_6802bf70_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Aug. Scene 1</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/scene/office/room_68cd053d_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 2</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/scene/office/room_c5b1bf2c_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 3</p>
+          </div>
+        </div>
+
+        <div class="text-justify">
+          Meeting room: We keep the objects of table, cabinet, and a cup on the meeting table as the same, and generate diverse layouts based on that.
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/scenes/room_12e0a75a_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Base Scene</p>
+          </div>
+          <div class="col-xs-6-crop">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/augmentation/scene/meetingroom/room_458b34bc_circular_cam_sampling_video.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Aug. Scene 1</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/scene/meetingroom/room_7f7701ef_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 2</p>
+          </div>
+          <div class="col-xs-6-crop">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/augmentation/scene/meetingroom/room_fe0c243d_circular_cam_sampling_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Aug. Scene 3</p>
+          </div>
+        </div>
+        
+        
+        
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <h3 id="policy-training">
+          Embodied Policy Training
+        </h3>
+
+        <h4>
+          Pick-and-Place Action Generation
+        </h4>
+
+        <div class="text-justify">
+          In Pick-and-Place, for grasping actions, we use M2T2 to generate grasp pose candidates from rendered depth images. 
+          Collision-free trajectories are computed by integrating Curobo into the motion planning and inverse kinematics pipeline, ensuring feasible and stable grasp execution. 
+
+          <br><b>Here we show the collected robot actions with camera views (3 perspective cameras located at left, right, and wrist), and we input both RGB and depth from each view to the policy network. 
+            Parallelized action generation is performed with 8 environments in parallel per GPU in the IsaacSim simulator.</b>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/pnp/motion_planning/obj_1_demo_1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Configuration 1</p>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/pnp/motion_planning/obj_1_demo_2.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Configuration 2</p>
+          </div>
+
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/pnp/motion_planning/obj_3_demo_1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Configuration 1</p>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/pnp/motion_planning/obj_3_demo_2.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Configuration 2</p>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/pnp/motion_planning/obj_2_demo_1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Configuration 1</p>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/pnp/motion_planning/obj_2_demo_2.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Configuration 2</p>
+          </div>
+
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/pnp/motion_planning/obj_4_demo_1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Configuration 1</p>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/pnp/motion_planning/obj_4_demo_2.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Configuration 2</p>
+          </div>
+        </div>
+
+        <h4>
+          More Examples of Pick-and-Place Actions Generation
+        </h4>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/more/pnp_case0_demo0.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Configuration 1</p>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/more/pnp_case0_demo1.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Configuration 2</p>
+          </div>
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/more/pnp_case1_demo0.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Configuration 1</p>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/more/pnp_case1_demo1.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Configuration 2</p>
+          </div>
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/more/pnp_case2_demo0.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p style="margin-top: 10px; font-style: italic;">Configuration 1</p>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/more/pnp_case2_demo1.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+              <p style="margin-top: 10px; font-style: italic;">Configuration 2</p>
+          </div>
+        </div>
+
+
+
+        <h4>
+          Policy Inference: Successful Examples
+        </h4>
+
+        <div class="text-justify">
+          We show some successful examples of the trained policy inference.
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/pnp/policy_rollouts/success/layout_625b9812_aug_type_v0_all_mixed_p4_group_eval_mixed35_layout_625b9812_aug_pose_group_00_pose0_e6ea0cfe_1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/pnp/policy_rollouts/success/layout_625b9812_aug_type_v0_all_mixed_p4_group_eval_mixed22_layout_625b9812_aug_pose_group_00_pose1_049d5062_2.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/pnp/policy_rollouts/success/layout_625b9812_aug_type_v0_all_mixed_p4_group_eval_mixed56_layout_625b9812_aug_pose_group_00_pose1_ec3cabb8_2.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/pnp/policy_rollouts/success/layout_625b9812_aug_type_v0_all_mixed_p4_group_eval_new_1_mixed19_layout_625b9812_aug_pose_group_00_pose1_15282fcb_1.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+          </div>
+        </div>
+
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/pnp/policy_rollouts/success/layout_625b9812_aug_type_v0_all_mixed_p4_group_eval_new_1_mixed32_layout_625b9812_aug_pose_group_00_pose0_42824ee5_1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/pnp/policy_rollouts/success/layout_625b9812_aug_type_v0_all_mixed_p4_group_eval_new_2_mixed24_layout_625b9812_aug_pose_group_00_pose1_94ea6ae7_1.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+          </div>
+        </div>
+
+        
+        <h4>
+          Policy Inference: Failure Cases
+        </h4>
+
+        <div class="text-justify">
+         Here are some failure cases of the trained policy inference. The failure cases are due to the randomness of the policy inference or far-away objects which are hard to reach and grasp by the robot.
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-6">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/pnp/policy_rollouts/fail/layout_625b9812_aug_type_v0_all_mixed_p4_group_eval_mixed36_layout_625b9812_aug_pose_group_00_pose1_427692cb_2.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="col-xs-6">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/pnp/policy_rollouts/fail/layout_625b9812_aug_type_v0_all_mixed_p4_group_eval_mixed41_layout_625b9812_aug_pose_group_00_pose1_2d4784f8_2.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+          </div>
+        </div>
+
+
+        <h4>
+          Mobile Manipulation Action Generation
+        </h4>
+
+        <div class="text-justify">
+          This task is composed of navigation with object pick-and-place in between. For the navigation motions, we adopt RRT for robot path planning, generating collision-free trajectories between designated start and target positions.
+
+          <br><b>Here we show the collected robot actions with camera views (2 fisheye cameras for navigation (front and back), 3 perspective cameras (left, right, and wrist) for pick-and-place), and we input both RGB and depth from each view to the policy network. 
+            Parallelized action generation is performed with 2 environments in parallel per GPU in the IsaacSim simulator.</b>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/motion_planning/robomimic_data_Isaac-Mobile-Manipulation-Obj-Scene-Franka-IK-Abs-v3-motion_plan_layout_0a1f5375_06_debug_cameras_000_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/mm/motion_planning/robomimic_data_Isaac-Mobile-Manipulation-Obj-Scene-Franka-IK-Abs-v3-motion_plan_layout_3f4c2ce1_01_debug_cameras_004_cameras.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/motion_planning/robomimic_data_Isaac-Mobile-Manipulation-Obj-Scene-Franka-IK-Abs-v3-motion_plan_layout_7ee3bc9b_04_debug_cameras_001_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/mm/motion_planning/robomimic_data_Isaac-Mobile-Manipulation-Obj-Scene-Franka-IK-Abs-v3-motion_plan_layout_81665513_00_debug_cameras_003_cameras.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+          </div>
+        </div>
+
+        <h4>
+          More Examples of Mobile Manipulation Actions Generation
+        </h4>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/more/mm_case0_demo0.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+        
+          <div class="col-xs-12">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/more/mm_case0_demo1.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+          </div>
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+        
+
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/more/mm_case1_demo0.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+        
+          <div class="col-xs-12">
+              <video autoplay muted loop style="width: 100%; height: auto;">
+                  <source src="src/videos/robot_vis/more/mm_case1_demo1.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+              </video>
+          </div>
+
+          
+        </div>
+
+        <h4>
+          Policy Inference: Successful Examples
+        </h4>
+
+        <div class="text-justify">
+          We show some successful examples of the trained policy inference.
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/rollouts/scene_1/011_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/rollouts/scene_1/023_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/rollouts/scene_2/028_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/rollouts/scene_2/000_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/rollouts/scene_3/000_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/rollouts/scene_3/023_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <h4>
+          Policy Inference: Failure Cases
+        </h4>
+
+        <div class="text-justify">
+          Here are some failure cases of the trained policy inference. The failure cases are due to the randomness of the policy inference and difficult grasp pose location for reaching in the test cases.
+         </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/rollouts/failure_case/037_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/robot_vis/mm/rollouts/failure_case/047_cameras.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+
+        <h4>
+          Articulated Objects in SAGE Generated Scenes
+        </h4>
+
+        <div class="text-justify">
+          While the paper focuses on the overall framework, SAGE's modular design can easily extend the current text-to-3D generation with object retrieval. The figure below shows a simple integration using articulated assets from PartNet-Mobility in the generated scenes, and robot actions generated by grasp pose prediction and motion planning as described in the paper.
+        </div>
+
+        <div class="row text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-4">
+              <img src="src/videos/articulation/art_scenes/bedroom/frame_0000_min_45.png" alt="Reference image" style="width: 100%; height: auto;">
+              <p style="margin-top: 10px; font-style: italic;">Closed</p>
+          </div>
+          <div class="col-xs-4">
+              <img src="src/videos/articulation/art_scenes/bedroom/frame_0004_random_45.png" alt="Reference image" style="width: 100%; height: auto;">
+              <p style="margin-top: 10px; font-style: italic;">Open</p>
+          </div>
+          <div class="col-xs-4">
+            <img src="src/videos/articulation/art_scenes/livingroom/frame_0000_min_24.png" alt="Reference image" style="width: 100%; height: auto;">
+            <p style="margin-top: 10px; font-style: italic;">Closed</p>
+          </div>
+          <div class="col-xs-4">
+            <img src="src/videos/articulation/art_scenes/livingroom/frame_0008_random_24.png" alt="Reference image" style="width: 100%; height: auto;">
+            <p style="margin-top: 10px; font-style: italic;">Open</p>
+          </div>
+          
+        </div>
+
+        <div class="row_no_margin text-center" style="margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+          <div class="col-xs-12">
+            <video autoplay muted loop style="width: 100%; height: auto;">
+                <source src="src/videos/articulation/art_drawer.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+
+        <!-- citation bibtex -->
+        <h3>
+          Citation
+        </h3>
+        <p>
+          If you find our work useful in your research, please consider citing:
+        </p>
+
+        <pre><code>@article{xia2026sage,
+  title={SAGE: Scalable Agentic 3D Scene Generation for Embodied AI},
+  author={Xia, Hongchi and Li, Xuan and Li, Zhaoshuo and Ma, Qianli and Xu, Jiashu and Liu, Ming-Yu and Cui, Yin and Lin, Tsung-Yi and Ma, Wei-Chiu and Wang, Shenlong and Song, Shuran and Wei, Fangyin},
+  journal={arXiv preprint arXiv:TBD},
+  year={2026}
+}</code></pre>
+        
+
+        <!-- add some padding here -->
+        <div style="height: 100px;"></div>
+
+
+
+
+
+
+  </div>
+</body>
+
+</html>

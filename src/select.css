@@ -1,0 +1,36 @@
+.container-video{
+    width: 300px;
+    height: 300px;
+    overflow:hidden;
+    display:block;
+}
+#showoff-img{
+    margin-left: -15px;
+    margin-right: -15px;
+    margin-top: -15px;
+    margin-bottom: -15px;
+
+}
+
+.container {
+	background-color: #FFFFFF;
+}
+.teaser-img {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.img-responsive {
+	margin: auto;
+}
+.comparison-table {
+	table-layout: fixed;
+		word-wrap: break-word;
+}
+.comparison-table th {
+	text-align: center;
+}
+.containner{display: flex;
+justify-content: center; /* align horizontal */
+align-items: center; /* for center of your page */
+height:100%; /* give it's height*/
+}

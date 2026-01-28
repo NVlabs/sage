@@ -1,0 +1,66 @@
+.glide video {
+  display: block;
+  object-fit: cover;
+  margin: auto;
+}
+.glide__arrow {
+  padding: 5px 7px;
+  box-shadow: none;
+  border: none;
+}
+.glide__arrow img {
+  filter: brightness(0%) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(24deg) brightness(100%) contrast(80%) drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+  height: 2.5em;
+  filter: ;
+}
+.glide__arrow:hover img {
+  filter: brightness(0%) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(24deg) brightness(100%) contrast(100%) drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+}
+.glide__bullets {
+  bottom: 0.5em;
+}
+#dynamic-carousel.glide video, #static-carousel.glide video {
+  /*
+  width: 600px;
+  height: 450px;
+  border-radius: 15px;
+  */
+  width: 1000px;
+  height: 370px;
+  border-radius: 12px;
+}
+#dynamic-carousel-2.glide video, #static-carousel-2.glide video {
+  /*
+  width: 600px;
+  height: 450px;
+  border-radius: 15px;
+  */
+  width: 1000px;
+  height: 370px;
+  border-radius: 12px;
+}
+#dynamic-carousel-3.glide video, #static-carousel-3.glide video {
+  /*
+  width: 600px;
+  height: 450px;
+  border-radius: 15px;
+  */
+  width: 1000px;
+  height: 370px;
+  border-radius: 12px;
+}
+#dynamic-carousel-4.glide video, #static-carousel-4.glide video {
+  /*
+  width: 600px;
+  height: 450px;
+  border-radius: 15px;
+  */
+  width: 1000px;
+  height: 370px;
+  border-radius: 12px;
+}
+#realtime-carousel.glide video {
+  width: 410px;
+  height: 230px;
+  border-radius: 10px;
+}
