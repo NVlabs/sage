@@ -19,7 +19,7 @@ import time
 import random
 from models import Room, Object
 import trimesh
-from .objaverse_retrieval import ObjathorRetriever
+# from .objaverse_retrieval import ObjathorRetriever
 from .object_generation import generate_model_from_text
 from .object_attribute_inference import infer_attributes_from_claude
 from foundation_models import get_clip_models, get_sbert_model
@@ -29,21 +29,21 @@ from constants import RESULTS_DIR
 clip_model, clip_preprocess, clip_tokenizer = get_clip_models()
 sbert_model = get_sbert_model()
 
-def init_retrieval_objaverse(clip_model, clip_preprocess, clip_tokenizer, sbert_model):
+# def init_retrieval_objaverse(clip_model, clip_preprocess, clip_tokenizer, sbert_model):
 
-    # initialize generation
-    retrieval_threshold = 28
-    object_retriever = ObjathorRetriever(
-        clip_model=clip_model,
-        clip_preprocess=clip_preprocess,
-        clip_tokenizer=clip_tokenizer,
-        sbert_model=sbert_model,
-        retrieval_threshold=retrieval_threshold,
-    )
+#     # initialize generation
+#     retrieval_threshold = 28
+#     object_retriever = ObjathorRetriever(
+#         clip_model=clip_model,
+#         clip_preprocess=clip_preprocess,
+#         clip_tokenizer=clip_tokenizer,
+#         sbert_model=sbert_model,
+#         retrieval_threshold=retrieval_threshold,
+#     )
 
-    return object_retriever
+#     return object_retriever
 
-object_retriever_objaverse = init_retrieval_objaverse(clip_model, clip_preprocess, clip_tokenizer, sbert_model)
+# object_retriever_objaverse = init_retrieval_objaverse(clip_model, clip_preprocess, clip_tokenizer, sbert_model)
 
 
 def rotate_wall_mesh(mesh_dict):
@@ -125,9 +125,9 @@ def get_object_candidates(object_info: dict, source: str = "generation"):
     # object_variance_type = object_info["variance_type"]
     
     
-    global object_retriever_objaverse
+    # global object_retriever_objaverse
 
-    if source == "objaverse":
+    if source == "objaverse": # disable in the code release.
         object_retriever = object_retriever_objaverse
         database = object_retriever.database
         similarity_threshold_floor = 31

@@ -65,7 +65,17 @@ Once Isaac Sim is running, use the following scripts to generate scenes.
 ./scripts/generate_multi_rooms.sh
 ```
 
-*   **Image Conditioning:** All scripts support image conditioning by appending the image path as an input argument.
+*   **Image Conditioning:** All scripts support image conditioning by appending the image path as an input argument. Prompts might need revisions.
+
+### 2.3 Exports scenes to GLB, USD, and for Rendering
+First, you need to pack up the scenes with 
+```
+cd ../server
+python pack_scene_to_zip.py --layout_id [LAYOUT_ID] --upload_name [LAYOUT_ID]
+```
+
+Then unzip and use the kits in `https://huggingface.co/datasets/nvidia/SAGE-10k/tree/main/kits` to export to glb, usd, and rendering.
+
 
 ## 3. Scene Layout-Level Augmentation
 

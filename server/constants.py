@@ -17,11 +17,9 @@ import sys
 SERVER_ROOT_DIR = os.path.dirname(__file__)
 RESULTS_DIR = os.path.join(SERVER_ROOT_DIR, "results")
 
-ROBOMIMIC_ROOT_DIR = "/home/hongchix/codes/robomimic" if os.path.exists("/home/hongchix/codes/robomimic") else "/home/hongchix/main/robomimic"
-M2T2_ROOT_DIR = "/home/hongchix/codes/M2T2" if os.path.exists("/home/hongchix/codes/M2T2") else "/home/hongchix/main/M2T2"
-PARTNET_ROOT_DIR = "/home/hongchix/Downloads/partnet-mobility"
-
-MATFUSE_ROOT_DIR = "/home/hongchix/codes/matfuse-sd/src" if os.path.exists("/home/hongchix/codes/matfuse-sd/src") else "/home/hongchix/main/matfuse-sd/src"
+ROBOMIMIC_ROOT_DIR = os.path.join(SERVER_ROOT_DIR, "../robomimic")
+M2T2_ROOT_DIR = os.path.join(SERVER_ROOT_DIR, "../M2T2")
+MATFUSE_ROOT_DIR = os.path.join(SERVER_ROOT_DIR, "../matfuse-sd/src")
 
 PHYSICS_CRITIC_ENABLED = os.environ.get("PHYSICS_CRITIC_ENABLED", "true").lower() == "true"
 SEMANTIC_CRITIC_ENABLED = os.environ.get("SEMANTIC_CRITIC_ENABLED", "true").lower() == "true"
