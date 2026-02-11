@@ -76,7 +76,7 @@ If you find our work useful in your research, please consider citing:
 @article{xia2026sage,
   title={SAGE: Scalable Agentic 3D Scene Generation for Embodied AI},
   author={Xia, Hongchi and Li, Xuan and Li, Zhaoshuo and Ma, Qianli and Xu, Jiashu and Liu, Ming-Yu and Cui, Yin and Lin, Tsung-Yi and Ma, Wei-Chiu and Wang, Shenlong and Song, Shuran and Wei, Fangyin},
-  journal={arXiv preprint arXiv:TBD},
+  journal={arXiv preprint arXiv:2602.10116},
   year={2026}
 }
 ```
