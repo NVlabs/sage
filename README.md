@@ -5,7 +5,7 @@
 *NVIDIA, University of Illinois Urbana-Champaign, Cornell University, Stanford University*
 
 [![Paper](https://img.shields.io/badge/Paper-PDF-red)](https://arxiv.org/pdf/2602.10116)
-[![Website](https://img.shields.io/badge/Website-HTML-green)](https://nvlabs.github.io/sage/)
+[![Website](https://img.shields.io/badge/Website-HTML-green)](https://research.nvidia.com/labs/dir/sage/)
 [![Dataset](https://img.shields.io/badge/Dataset-SAGE--10k-blue)](https://huggingface.co/datasets/nvidia/SAGE-10k)
 
 ![Teaser](assets/teaser.png)
