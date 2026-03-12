@@ -16,6 +16,9 @@ python -m objathor.dataset.download_features --version 2023_09_23
 ```
 by default these will save to `~/.objathor-assets/...`.
 
+
+You might need the doors materials and texture coordinates. Link here: https://drive.google.com/file/d/1frgSjaYj7rp_CDcKOVTuvbCl6St1W6Fo/view?usp=drive_link
+
 ### 1.1 Start the TRELLIS Server
 Refer to the startup script of trellis. We hosted with docker on remote cluster.
 ```bash
