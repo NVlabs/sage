@@ -99,9 +99,14 @@ from utils import extract_json_from_response
 from floor_plan_materials.flux_generator import (
     generate_image_from_prompt
 )
-from floor_plan_materials.material_generator import (
-    material_generate_from_prompt
-)
+try:
+    from floor_plan_materials.material_generator import (
+        material_generate_from_prompt
+    )
+except ImportError as _matfuse_err:
+    print(f"⚠️ MatFuse material generator not available: {_matfuse_err}. Material generation will be skipped.", file=sys.stderr)
+    def material_generate_from_prompt(*args, **kwargs):
+        return [None]
 from isaaclab.correct_mobile_franka import (
     correct_mobile_franka_standalone,
     robot_task_feasibility_correction_for_room_standalone

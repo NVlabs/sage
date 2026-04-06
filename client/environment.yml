@@ -317,4 +317,4 @@ dependencies:
       - yarl==1.20.1
       - yourdfpy==0.0.58
       - zstandard==0.25.0
-prefix: /home/hongchix/main/miniconda3/envs/simgen
+prefix: /home/horde/miniconda3/envs/simgen

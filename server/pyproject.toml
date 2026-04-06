@@ -3,7 +3,7 @@ name = "server"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = "==3.10.12"
+requires-python = "==3.12.*"
 dependencies = [
     "httpx",
     "mcp[cli]>=1.9.4",
@@ -14,10 +14,10 @@ dependencies = [
     "torch==2.5.1",
     "torchvision==0.20.1",
     "torchaudio==2.5.1",
-    "isaacsim==4.2.0.2",
-    "isaacsim-extscache-physics==4.2.0.2",
-    "isaacsim-extscache-kit==4.2.0.2", 
-    "isaacsim-extscache-kit-sdk==4.2.0.2",
+    "isaacsim==6.0.0.0",
+    "isaacsim-extscache-physics==6.0.0.0",
+    "isaacsim-extscache-kit==6.0.0.0",
+    "isaacsim-extscache-kit-sdk==6.0.0.0",
     "compress-pickle",
     "compress-json",
     "trimesh",
@@ -30,7 +30,7 @@ dependencies = [
     "editdistance",
     "plyfile",
     "pip",
-    "pillow==9.3.0",
+    "pillow>=10.0.0",
     "manifold3d",
     "xatlas",
     "nvdiffrast @ git+https://github.com/NVlabs/nvdiffrast.git",
@@ -51,7 +51,6 @@ dependencies = [
     "gymnasium",
     "diffusers==0.35.1",
     "loguru",
-    "openai",
     "sapien>=3.0.0b1",
     "umap-learn",
     "seaborn",
@@ -59,8 +58,8 @@ dependencies = [
     "pointnet2_ops",
     "m2t2",
     "omni-isaac-lab",
-    "omni-isaac-lab_assets", 
-    "omni-isaac-lab_tasks[all]",
+    "omni-isaac-lab_assets",
+    "omni-isaac-lab_tasks[sb3,skrl]",
     "nvidia-curobo",
     "s3fs",
 ]
@@ -76,14 +75,20 @@ no-build-isolation-package = [
     "pytorch3d",
     "pointnet2_ops",
     "m2t2",
-    "nvidia-curobo"
+    "nvidia-curobo",
+    "nvdiffrast"
 ]
+
+[tool.uv.extra-build-dependencies]
+m2t2 = ["setuptools"]
+pointnet2-ops = ["setuptools", "torch==2.5.1"]
+nvidia-curobo = ["setuptools", "wheel", "ninja", "torch==2.5.1"]
 
 # Make local Isaac Lab packages editable
 [tool.uv.sources]
-omni-isaac-lab = { path = "/home/hongchix/codes/IsaacLab/source/extensions/omni.isaac.lab", editable = true }
-omni-isaac-lab_assets = { path = "/home/hongchix/codes/IsaacLab/source/extensions/omni.isaac.lab_assets", editable = true }
-omni-isaac-lab_tasks = { path = "/home/hongchix/codes/IsaacLab/source/extensions/omni.isaac.lab_tasks", editable = true }
-m2t2 = { path = "/home/hongchix/codes/M2T2", editable = true }
-pointnet2_ops = { path = "/home/hongchix/codes/M2T2/pointnet2_ops", editable = true }
-nvidia-curobo = { path = "/home/hongchix/codes/curobo", editable = true }
+omni-isaac-lab = { path = "../IsaacLab/source/extensions/omni.isaac.lab", editable = true }
+omni-isaac-lab_assets = { path = "../IsaacLab/source/extensions/omni.isaac.lab_assets", editable = true }
+omni-isaac-lab_tasks = { path = "../IsaacLab/source/extensions/omni.isaac.lab_tasks", editable = true }
+m2t2 = { path = "../M2T2", editable = true }
+pointnet2_ops = { path = "../M2T2/pointnet2_ops", editable = true }
+nvidia-curobo = { path = "../curobo", editable = true }
