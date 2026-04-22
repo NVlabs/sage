@@ -1,0 +1,132 @@
+data:
+    root_dir: ''
+    num_points: 16384
+    num_object_points: 1024
+    world_coord: True
+    num_rotations: 8
+    grid_resolution: 0.01
+    jitter_scale: 0.
+    contact_radius: 0.005
+    robot_prob: 1.0
+    offset_bins: [
+        0, 0.00794435329, 0.0158887021, 0.0238330509,
+        0.0317773996, 0.0397217484, 0.0476660972,
+        0.055610446, 0.0635547948, 0.0714991435, 0.08
+    ]
+
+m2t2:
+    scene_encoder:
+        type: 'pointnet2_msg'
+        num_points: 16384
+        downsample: 4
+        radius: 0.05
+        radius_mult: 2
+        use_rgb: False
+
+    object_encoder:
+        type: 'pointnet2_msg_cls'
+        num_points: 1024
+        downsample: 4
+        radius: 0.05
+        radius_mult: 2
+        use_rgb: False
+
+    contact_decoder:
+        mask_feature: 'res0'
+        in_features: ['res2', 'res3', 'res4']
+        place_feature: 'res4'
+        object_in_features: ['res1', 'res2', 'res3']
+        embed_dim: 256
+        feedforward_dim: 512
+        num_scales: 3
+        num_layers: 3
+        num_heads: 8
+        num_grasp_queries: 1
+        num_place_queries: 1
+        language_context_length: 77
+        language_token_dim: 512
+        use_attn_mask: True
+        use_task_embed: False
+        activation: 'GELU'
+
+    action_decoder:
+        use_embed: False
+        max_num_pred: null
+        hidden_dim: 256
+        num_layers: 3
+        num_params: 4
+        activation: 'GELU'
+        offset_bins: [
+            0, 0.00794435329, 0.0158887021, 0.0238330509,
+            0.0317773996, 0.0397217484, 0.0476660972,
+            0.055610446, 0.0635547948, 0.0714991435, 0.08
+        ]
+
+    matcher:
+        object_weight: 2.0
+        bce_weight: 5.0
+        dice_weight: 5.0
+
+    grasp_loss:
+        object_weight: 2.0
+        not_object_weight: 0.1
+        pseudo_ce_weight: 0.0
+        bce_topk: 512
+        bce_weight: 5.0
+        dice_weight: 5.0
+        deep_supervision: True
+        recompute_indices: True
+        adds_pred2gt: 100.0
+        adds_gt2pred: 0.0
+        adds_per_obj: False
+        contact_dir: 0.0
+        approach_dir: 0.0
+        offset: 1.0
+        param: 1.0
+        offset_bin_weights: [
+            0.16652107, 0.21488856, 0.37031708, 0.55618503, 0.75124664,
+            0.93943357, 1.07824539, 1.19423112, 1.55731375, 3.17161779
+        ]
+
+    place_loss:
+        bce_topk: 1024
+        bce_weight: 5.0
+        dice_weight: 5.0
+        deep_supervision: True
+
+optimizer:
+    type: 'ADAMW'
+    base_batch_size: 16
+    base_lr: 0.0001
+    backbone_multiplier: 1.0
+    grad_clip: 0.01
+    weight_decay: 0.05
+
+train:
+    mask_thresh: 0.5
+    num_gpus: 8
+    port: '1234'
+    batch_size: 16
+    num_workers: 8
+    num_epochs: 160
+    print_freq: 25
+    plot_freq: 50
+    save_freq: 10
+    checkpoint: null
+    log_dir: ''
+
+eval:
+    checkpoint: ''
+    mask_thresh: 0.1
+    world_coord: True
+    placement_height: 0.02
+
+rlbench:
+    base_dir: sample_data/rlbench
+    lang_emb_path: sample_data/rlbench/language_goal.pkl
+    task_name: meat_off_grill
+    cameras: [front,left_shoulder,right_shoulder,wrist]
+    camera_resolution: [128, 128]
+    scene_bounds: [-0.3, -0.5, 0.6, 0.7, 0.5, 1.6]
+    episode: 0
+    frame_id: 0

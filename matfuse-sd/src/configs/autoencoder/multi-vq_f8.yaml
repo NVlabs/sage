@@ -1,0 +1,74 @@
+model:
+  base_learning_rate: 4.5e-6
+  target: ldm.models.autoencoder.VQModelMulti
+  params:
+    monitor: "val/rec_loss"
+    embed_dim: 3
+    n_embed: 4096
+    lossconfig:
+      target: ldm.modules.losses.MaterialLoss
+      params:
+        imgloss:
+          target: ldm.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+          params:
+            disc_start: 50001
+            disc_weight: 0.5
+            n_classes: 4096
+    image_key: packed
+    ddconfig:
+      double_z: false
+      z_channels: 256
+      resolution: 256
+      in_channels: 3
+      out_ch: 12
+      ch: 128
+      ch_mult:
+      - 1
+      - 1
+      - 2
+      - 4
+      num_res_blocks: 2
+      attn_resolutions: [ ]
+      dropout: 0.0
+
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 2
+    num_workers: 0
+    wrap: false
+    train:
+      target: ldm.data.matfuse.MatFuseDataset
+      params:
+        data_root: sample_materials
+        size: 256
+        output_names:
+          - diffuse
+          - normal
+          - roughness
+          - specular
+    validation:
+      target: ldm.data.matfuse.MatFuseDataset
+      params:
+        data_root: sample_materials
+        size: 256
+        output_names:
+          - diffuse
+          - normal
+          - roughness
+          - specular
+
+lightning:
+  callbacks:
+    image_logger:
+      target: main.ImageLogger
+      params:
+        batch_frequency: 2000
+        max_images: 4
+        increase_log_steps: False
+        log_images_kwargs: 
+          ddim_steps: 50
+
+  trainer:
+    benchmark: True
+    accumulate_grad_batches: 2

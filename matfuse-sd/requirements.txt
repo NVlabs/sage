@@ -1,0 +1,23 @@
+albumentations==0.4.3
+opencv-python
+numpy==1.22.2
+extcolors==1.0.0
+Pylette==2.0.1
+--extra-index-url https://download.pytorch.org/whl/cu117
+torch==1.13.1+cu117
+--extra-index-url https://download.pytorch.org/whl/cu117
+torchvision==0.14.1+cu117 
+pytorch-lightning==1.4.2
+torchmetrics==0.6
+omegaconf==2.1.1
+einops==0.3.0
+torch-fidelity==0.3.0
+transformers==4.19.2
+webdataset==0.2.5
+gradio==3.42.0
+protobuf==3.17.3
+wandb==0.17.0
+kornia==0.7.2
+sentence-transformers==2.2.2
+-e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
+-e git+https://github.com/openai/CLIP.git@main#egg=clip

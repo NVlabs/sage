@@ -1,0 +1,251 @@
+Task: Generate a layout of "Mid-century modern family home with Eames chairs, walnut furniture, and a sunken living room" including multiple rooms.
+
+=== OVERVIEW ===
+
+You will use tools to generate a complete, realistic scene. The process involves two main steps:
+1. Generate the room layout
+2. Place objects strategically in multiple stages
+
+=== STEP 1: GENERATE ROOM LAYOUT ===
+
+Generate the scene layout first. 
+
+The layout generation will return scene requirements containing:
+- Recommended objects to place
+- Style information for the room
+- Other important placement guidelines
+
+=== STEP 2: PLACE OBJECTS ===
+
+This is the core of your task. Follow the guidelines below carefully.
+
+For every room in the layout, you need to place objects inside following the guidelines below.
+
+[CRITICAL] ALWAYS use parallel tool calls to place objects in multiple rooms simultaneously
+[CRITICAL] This applies to ALL placement scenarios: initial placement, fixing issues, retrying failures, addressing critic feedback
+[CRITICAL] Parallel placement saves significant time - use it by default!
+
+--- 2.1 OBJECT PLACEMENT STRATEGY ---
+
+Place objects in multiple stages following this priority order:
+
+STAGE 1: Large, Key Furniture (Highest Priority)
+- Place all major furniture first: cabinets, counters, appliances, tables, chairs
+- These are the foundational elements of the room
+- [CRITICAL] Think thoroughly about the spatial relationships between ALL objects before placing them
+- Consider adjacency, facing directions, and functional groupings
+
+STAGE 2: Object Combos and Functional Groups
+- Place objects that form natural combinations with existing furniture:
+  * Chairs with tables/desks
+  * Small appliances near relevant counters
+  * Functional groupings (e.g., coffee maker near mugs)
+- This prevents furniture from seeming isolated and creates a cohesive scene
+
+STAGE 3: Supporting Surface Objects
+- On EVERY piece of furniture that can support objects, place 2+ meaningful items:
+  * Kitchen counters: utensils, cutting boards, canisters, small appliances
+  * Tables/desks: plates, bowls, food items, decorative objects
+  * Shelves: dishes, glasses, cookbooks, jars (>5 items per shelf)
+  * Cabinets with visible surfaces: storage containers, decorative items
+- Do NOT place objects on furniture that cannot support them (e.g., lamps)
+
+STAGE 4: Decorative and Background Objects
+- Add remaining objects necessary for completeness:
+  * Wall decorations (pictures, clocks)
+  * Additional small decor items
+  * Any other objects that enhance realism
+
+--- 2.2 PLACEMENT SOURCES ---
+
+Decide what objects to place by consulting THREE sources in order:
+
+SOURCE 1: Scene Requirements (from layout generation)
+- Follow the recommended objects list from the layout generation result
+- This is your primary reference
+
+SOURCE 2: Semantic Critic Info Recommendations
+- Review the placement recommendations in semantic critic info
+- Identify the most urgent objects that need to be placed
+- Combine all recommended actions and place those objects together
+- [CRITICAL] Follow these recommendations closely - they identify what's missing
+
+SOURCE 3: Failed Placements (Retry Logic)
+- If object placement fails, RETRY ONCE with the same or similar objects
+- If failures persist due to limited space, try smaller alternative objects
+- Do NOT give up after one failure
+
+--- 2.3 PARALLEL MULTI-ROOM PLACEMENT ---
+
+[CRITICAL] ALWAYS place objects in MULTIPLE ROOMS SIMULTANEOUSLY using parallel tool calls
+[CRITICAL] Parallel placement is the DEFAULT approach - use it at ALL times to save time
+
+PARALLEL PLACEMENT STRATEGY:
+- When working on a multi-room apartment, make parallel placement calls for different rooms
+- Place objects in all the rooms at the same time whenever possible
+- This dramatically improves efficiency and reduces total time
+- Example: Place kitchen objects, bedroom objects, and bathroom objects in parallel
+
+WHEN TO USE PARALLEL PLACEMENT:
+[CRITICAL] Use parallel placement in ALL scenarios, including:
+✓ During initial large furniture placement across all rooms (PARALLEL)
+✓ When placing objects on surfaces in multiple rooms (PARALLEL)
+✓ When addressing critic recommendations for different rooms (PARALLEL)
+✓ When fixing problems or retrying failed placements in multiple rooms (PARALLEL)
+✓ When adding missing objects across multiple rooms (PARALLEL)
+✓ Any time you're working on independent rooms simultaneously (ALWAYS PARALLEL)
+
+[CRITICAL] Even when fixing issues, problems, or addressing critic feedback, use parallel calls
+[CRITICAL] There is NO scenario where you should place objects in rooms sequentially if you can do it in parallel
+[CRITICAL] Default to parallel placement unless rooms have dependencies on each other
+
+--- 2.4 PLACEMENT CONSTRAINTS ---
+
+PER-CALL LIMITS:
+[CRITICAL] Maximum 35-40 objects per room per single placement call
+[CRITICAL] Maximum 10-12 object TYPES per room per single placement call
+[ENCOURAGED] Place multiple object types in a single call for efficiency
+
+TOTAL SCENE LIMITS:
+- NO maximum on total objects across all calls
+- NO maximum on total object types across all calls
+- Add as many objects as needed for completeness and diversity
+
+FORBIDDEN OBJECTS:
+[CRITICAL] NEVER add: rugs, mats, curtains, blankets, ceiling-hanging objects (these are already installed)
+
+REPLACEMENT WARNING:
+[CRITICAL] NEVER use "replace all objects" - this removes everything you've placed
+
+--- 2.5 STYLE CONSISTENCY ---
+
+[IMPORTANT] All placed objects must match the style specified in the scene requirements
+[IMPORTANT] Explicitly mention the object style when placing them
+
+--- 2.6 OBJECT IDs ---
+
+[IMPORTANT] Pay attention to place_id and object_id values
+[IMPORTANT] Use exact object_id values when referencing existing objects for placement
+
+--- 2.7 QUALITY REQUIREMENTS ---
+
+Your scene MUST achieve the following:
+
+✓ REALISM:
+- Believable layout with correct positions, rotations, and sizes
+- Common daily objects that make the room feel lived-in
+- Rich with appropriate furniture and objects
+- Objects of the same category are well-aligned
+- Reasonable spatial relationships (e.g., chairs face tables)
+- Sufficient walking space
+- [CRITICAL] Correct orientations for all objects
+
+✓ COMPLETENESS:
+- Contains all necessary furniture for a kitchen (counters, cabinets, appliances, etc.)
+- [CRITICAL] All necessary large AND small items are present
+- [CRITICAL] Rich in details
+- [CRITICAL] Every shelf is FULL of objects (>5 items per shelf minimum)
+- [CRITICAL] Every supporter surface (tables, desks, shelves, counters) has small objects on it
+- [CRITICAL] The room must feel finished and complete
+
+✗ AVOID THESE MISTAKES:
+- Unusual objects or strange placements that seem unrealistic
+- Missing key objects or mismatched furniture for a kitchen
+- Floating objects, crowded floors, abnormal sizes
+- Object collisions or overlaps
+- Incorrect orientations
+- Large items placed oddly (e.g., refrigerator blocking walkway)
+- Large empty spaces
+- Blockers in front of functional furniture
+- Sparse or empty rooms lacking decor or key elements
+
+--- 2.8 WHEN TO STOP (COMPLETION CHECKLIST) ---
+
+[CRITICAL] You MUST keep track of the current object placement status continuously.
+
+DO NOT STOP until ALL of the following conditions are met:
+
+□ CONDITION 1: All necessary large AND small items are present with rich details
+□ CONDITION 2: Every shelf is full of objects (>5 items per shelf)
+□ CONDITION 3: Every supporter surface (tables, desks, shelves, counters) has small objects on it
+□ CONDITION 4: All scene requirements from layout generation are satisfied
+□ CONDITION 5: All semantic critic recommendations have been addressed
+
+BEFORE STOPPING:
+[CRITICAL] Explicitly verify each condition above
+[CRITICAL] If any condition is not met, continue placing objects
+[CRITICAL] If placements fail for small objects on surfaces, keep trying with different object types
+[CRITICAL] Do NOT be afraid of placement failures - keep trying with alternatives
+[CRITICAL] Do NOT stop prematurely - persistence is required
+[CRITICAL] When placing final missing objects across rooms, use PARALLEL calls to save time
+
+[ENCOURAGED] When in doubt, place more objects if they are reasonable additions
+
+=== PLACEMENT LOCATION SPECIFICATION ===
+
+When placing objects, you must specify the location using ONE of three types:
+
+--- TYPE 1: "floor" ---
+
+Use "floor" for objects that sit on the ground/floor surface.
+
+This includes:
+- Objects against walls
+- Objects in corners  
+- Objects beside/next to/left of/right of/in front of/behind other floor objects
+- Any object whose base rests on the floor
+
+Examples:
+✓ "A table against the wall" → use "floor" (table sits on floor, near wall)
+✓ "A sofa in the corner" → use "floor" (sofa sits on floor, in corner)
+✓ "A chair next to the table" → use "floor" (chair sits on floor, near table)
+✓ "A chair in front of the desk" → use "floor" (chair sits on floor, facing desk)
+✓ "A cabinet beside the refrigerator" → use "floor" (cabinet sits on floor, next to fridge)
+
+--- TYPE 2: "wall" ---
+
+Use "wall" ONLY for objects that are:
+- Physically attached or mounted directly ON the wall surface
+- Positioned above the floor level
+
+Examples:
+✓ "A picture on the wall" → use "wall" (mounted on wall surface, above floor)
+✓ "A wall-mounted shelf" → use "wall" (attached to wall, above floor)
+✓ "A wall-mounted TV" → use "wall" (mounted on wall, above floor)
+✓ "A wall cabinet above the counter" → use "wall" (attached to wall, above floor)
+
+--- TYPE 3: "object_id" or "estimated_object_name" ---
+
+Use object references ONLY for objects placed onto/on top of another existing object.
+
+When to use each:
+- Use "object_id" when you know the exact ID of the existing object (preferred)
+- Use "estimated_object_name" when you don't know the exact ID or the object is about to be placed
+
+Examples:
+✓ "A lamp on a table" → use the table's object_id (lamp goes on top of table)
+✓ "A plate on the kitchen counter" → use the counter's object_id (plate goes on top)
+✓ "A vase on the cabinet" → use the cabinet's object_id (vase goes on top)
+✓ "Books on the shelf" → use the shelf's object_id (books go inside/on the shelf)
+
+--- CRITICAL DISTINCTIONS ---
+
+[CRITICAL] The key distinction is the spatial relationship:
+- "on top of" → use object_id or estimated_object_name
+- "beside", "next to", "in front of", "behind", "left of", "right of" → use "floor"
+
+[CRITICAL] Be precise - do NOT use "floor" or "wall" as a lazy fallback when the location should be an object_id
+
+[CRITICAL] When referencing existing objects, use the exact object_id whenever possible
+
+--- PLACEMENT FORMAT ---
+
+Specify placements as:
+"place [quantity] [object_type] [description] on [location (floor|wall|object_id)], [extra guidance]"
+
+Example:
+"place 3 kitchen knife modern style on object_id_42, aligned in a row"
+"place 1 dining chair wooden on floor, facing the table"
+"place 1 wall clock round on wall, above the doorway"
+
+[IMPORTANT] In tool returns, the placement description `place on [place_location]` follows this same pattern.
